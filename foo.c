@@ -3,16 +3,15 @@
 
 void foo(char *buf)
 {
-  char a;
-
-  a = buf[0];
-  a = buf[4];
-  a = buf[8];
-  a = buf[10];
-  buf[5]  = 't';
-  buf[10] = 'e';
-  buf[20] = 's';
-  buf[30] = 't';
+    char pippo[20];
+    
+    int i;
+    for(i = 0; i < 20; ++i) {
+        pippo[i] = buf[i] - '0';
+    }
+    
+    pippo[19] = 0;
+    
 }
 
 int main(int argc, char ** argv) {

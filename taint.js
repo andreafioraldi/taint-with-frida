@@ -4,6 +4,19 @@ var appModule = Process.enumerateModulesSync()[0];
 var appStart = appModule.base;
 var appEnd = appStart.add(appModule.size);
 
+function scaleSHL(addr, scale) {
+    switch(scale) {
+        case 1:
+        return addr;
+        case 2:
+        return addr.shl(1);
+        case 4:
+        return addr.shl(2);
+        case 8:
+        return addr.shl(3);
+    }
+}
+
 var regSize = {
     "rax": 8, "rbx": 8, "rcx": 8, "rdx": 8, "rdi": 8, "rsi": 8,
     "eax": 4, "ebx": 4, "ecx": 4, "edx": 4, "edi": 4, "esi": 4,
@@ -18,58 +31,138 @@ var regId = {
     "al": 0, "bl": 1, "cl": 2, "dl": 3, "dil": 4, "sil": 5,
 };
 
+var registers = [
+    ["rax", "eax", "ax", "al"],
+    ["rbx", "ebx", "bx", "bl"],
+    ["rcx", "ecx", "cx", "cl"],
+    ["rdx", "edx", "dx", "dl"],
+    ["rdi", "edi", "di", "dil"],
+    ["rsi", "esi", "si", "sil"],
+];
+
 var taintedRegs = [];
 var taintedAddrs = [];
+
+function taintReg(reg) {
+    if(taintedRegs.indexOf(reg) !== -1)
+        return;
+    
+    var ra = registers[regId[reg]];
+    for(var i = ra.indexOf(reg); i < ra.length; ++i) {
+        taintedRegs.push(ra[i]);
+    }
+}
+
+function untaintReg(reg) {
+    var ra = registers[regId[reg]];
+    for(var i = ra.indexOf(reg); i < ra.length; ++i) {
+        var idx = taintedRegs.indexOf(ra[i]);
+        if(idx !== -1)
+            taintedRegs.splice(idx, 1);
+    }
+}
+
+function findTaintedMem(addr) {
+    for(var i in taintedAddrs)
+        if(taintedAddrs[i].equals(addr))
+            return i;
+    return -1;
+}
+
+function taintMem(addr) {
+    if(findTaintedMem(addr) === -1)
+        taintedAddrs.push(addr);
+}
+
+function untaintMem(addr) {
+    for(var i in taintedAddrs) {
+        if(taintedAddrs[i] .equals(addr)) {
+            taintedAddrs.splice(i, 1);
+            return;
+        }
+    }
+}
 
 //{"type":"mem","value":{"base":"rip","scale":1,"disp":2181026}}
 
 function movRegMem(ctx) {
-    var instr = Instruction.parse(ctx.pc)
-    if(instr.operands[1].value.base !== undefined) {
-        var addr = ctx[instr.operands[1].value.base].add(instr.operands[1].value.disp); //ex. ctx["rip"] + 0x32
-        if(instr.operands[1].value.index !== undefined)
-            addr += ctx[instr.operands[1].value.index] * instr.operands[1].value.scale;
+    var instr = Instruction.parse(ctx.pc);
+    var op0 = instr.operands[0].value;
+    var op1 = instr.operands[1].value;
+    if(op1.base !== undefined) {
+        var addr = ctx[op1.base].add(op1.disp); //ex. ctx["rip"] + 0x32
+        if(op1.index !== undefined)
+            addr = addr.add(scaleSHL(ctx[op1.index], op1.scale));
         
-        for(var i in taintedAddrs) {
-            var r = taintedAddrs[i];
-            if(addr.compare(r[0]) >= 0 && addr.compare(r[1]) < 0) {
-                console.log(" <READ " + addr + ">  " + instr);
-                break;
-            }
+        if(findTaintedMem(addr) !== -1) {
+            console.log(" <READ  " + addr + ">  \t" + instr.address + " " + instr);
+            taintReg(op0)
+        }
+        else if(taintedRegs.indexOf(op0) !== -1) { //mem not tainted
+            console.log(" <READ  " + addr + ">  \t" + instr.address + " " + instr);
+            untaintReg(op0);
         }
     }
+
 }
 
 function movMemReg(ctx) {
-    
+    var instr = Instruction.parse(ctx.pc);
+    var op0 = instr.operands[0].value;
+    var op1 = instr.operands[1].value;
+    if(op0.base !== undefined) {
+        var addr = ctx[op0.base].add(op0.disp); //ex. ctx["rip"] + 0x32
+        if(op0.index !== undefined)
+            addr = addr.add(scaleSHL(ctx[op0.index], op0.scale));
+        
+        if(findTaintedMem(addr) !== -1) {
+            console.log(" <WRITE " + addr + ">  \t" + instr.address + " " + instr);
+            if(!(op1 in regId) || taintedRegs.indexOf(op1) === -1) //not tainted reg
+                untaintMem(addr);
+        }
+        else if(taintedRegs.indexOf(op1) !== -1) { //mem not tainted
+            console.log(" <WRITE " + addr + ">  \t" + instr.address + " " + instr);
+            taintMem(addr);
+        }
+    }
 }
 
 function movRegReg(ctx) {
-    var instr = Instruction.parse(ctx.pc)
-    var dst = regId[instr.operands[0].value]
-    var dst_idx = taintedRegs.indexOf(dst)
-    if(dst_idx === -1) { //dst is not tainted
-        if(taintedRegs.indexOf(instr.operands[1].value) !== -1) {//src is tainted
-            taintedRegs.push(dst);
-            //console.log(instr.address + "   " + instr + "   " + JSON.stringify(taintedRegs));
-        }
+    var instr = Instruction.parse(ctx.pc);
+    var op0 = instr.operands[0].value;
+    var op1 = instr.operands[1].value;
+    if(!(op0 in regId))
+        return;
+    try{
+    if(taintedRegs.indexOf(op0) !== -1 && (!(op1 in regId) || taintedRegs.indexOf(op1) === -1)) {
+        console.log(" <REGS  " + op0 + " <- " + op1 + ">  \t\t" + instr.address + " " + instr);
+        untaintReg(op0);
     }
-    else {
-        if(taintedRegs.indexOf(instr.operands[1].value) === -1) {//src is not tainted
-            taintedRegs[dst_idx] = undefined;
-            //console.log(instr.address + "   " + instr + "   " + JSON.stringify(taintedRegs));
-        }
-    }
+    else if(taintedRegs.indexOf(op0) === -1 && taintedRegs.indexOf(op1) !== -1) {
+        console.log(" <REGS  " + op0 + " <- " + op1 + ">  \t\t" + instr.address + " " + instr);
+        taintReg(op0);
+    }}catch(e){console.log(e);}
+    //console.log(instr + "  " + JSON.stringify(taintedRegs));
 }
 
 function movRegImm(ctx) {
-    var instr = Instruction.parse(ctx.pc)
-    //console.log("log " + instr);
-    var dst = instr.operands[0].value
-    var dst_idx = taintedRegs.indexOf(dst)
-    if(dst_idx !== -1) { //dst is tainted
-        taintedRegs[dst_idx] = undefined;
-        console.log(instr.address + "   " + instr + "   " + JSON.stringify(taintedRegs));
+    var instr = Instruction.parse(ctx.pc);
+    var op0 = instr.operands[0].value
+    
+    if(taintedRegs.indexOf(op0) !== -1) console.log(" <IMMREG " + op0 + ">        \t\t" + instr.address + " " + instr);
+    untaintReg(op0);
+}
+
+function movMemImm(ctx) {
+    var instr = Instruction.parse(ctx.pc);
+    var op0 = instr.operands[0].value;
+    if(op0.base !== undefined) {
+        var addr = ctx[op0.base].add(op0.disp); //ex. ctx["rip"] + 0x32
+        if(op0.index !== undefined)
+            addr = addr.add(scaleSHL(ctx[op0.index], op0.scale));
+        
+        if(findTaintedMem(addr) !== -1) console.log(" <IMM   " + addr + ">  \t" + instr.address + " " + instr);
+        untaintMem(addr);
     }
 }
 
@@ -81,15 +174,18 @@ function startTracing() {
           try {
               do {
                 
-                if(instr.mnemonic.startsWith("mov")) {
+                //if(instr.mnemonic.startsWith("mov")) {
+                if(instr.operands.length == 2) {
                     if(instr.operands[0].type == "reg" && instr.operands[1].type == "mem")
                         iterator.putCallout(movRegMem);
                     else if(instr.operands[0].type == "mem" && instr.operands[1].type == "reg")
                         iterator.putCallout(movMemReg);
                     else if(instr.operands[0].type == "reg" && instr.operands[1].type == "reg")
                         iterator.putCallout(movRegReg);
-                    else if(instr.operands[0].type == "reg" && instr.operands[1].type == "imm")
+                    else if(instr.mnemonic.startsWith("mov") && instr.operands[0].type == "reg" && instr.operands[1].type == "imm")
                         iterator.putCallout(movRegImm);
+                    else if(instr.mnemonic.startsWith("mov") && instr.operands[0].type == "mem" && instr.operands[1].type == "imm")
+                        iterator.putCallout(movMemImm);
                     //console.log(instr);
                 }
                 
@@ -102,22 +198,39 @@ function startTracing() {
 }
 
 
-Interceptor.attach(ptr("0x4005F8"), function () { //main
+Interceptor.attach(ptr("0x4005FD"), function () { //main
     console.log("[x] start tracing");
     startTracing();
 });
 
-Interceptor.attach(ptr("0x400596"), function () { //foo
-    console.log("[x] start taint");
-    taintedAddrs.push([this.context.rdi, this.context.rdi.add(30)]);
-    console.log(" tainted memory: " + JSON.stringify(taintedAddrs));
-    //console.log(this.context.pc + " . " + Instruction.parse(this.context.pc))
+Interceptor.attach(ptr("0x400596"), { //foo
+    onEnter: function(args) {
+        console.log("[x] start taint");
+        for(var i = 0; i < 40; ++i)
+            taintedAddrs.push(this.context.rdi.add(i));
+        console.log(" tainted memory: " + JSON.stringify([this.context.rdi, this.context.rdi.add(30)]));
+    },
+    onLeave: function(retval) {
+        console.log("[x] end taint");
+        console.log(" tainted registers: " + JSON.stringify(taintedRegs));
+        var ranges = [];
+        taintedAddrs.sort();
+        for(var i in taintedAddrs) {
+            var a = taintedAddrs[i];
+            if(ranges.length === 0) {
+                ranges.push([a, a]);
+            }
+            if(ranges[ranges.length -1][1].equals(a))
+                ranges[ranges.length -1][1] = a.add(1);
+            else {
+                ranges.push([a, a.add(1)]);
+            }
+        }
+        console.log(" tainted memory   : " + JSON.stringify(ranges));
+        //stop taint
+        Stalker.unfollow(Process.getCurrentThreadId());
+    }
 });
 
-
-Interceptor.attach(ptr("0x4005F7"), function () { //ret foo
-    console.log("[x] end taint");
-    console.log(JSON.stringify(taintedAddrs));
-});
 
 
