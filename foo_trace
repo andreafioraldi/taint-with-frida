@@ -1,0 +1,71 @@
+[x] enter main()
+[x] started tracing
+[x] enter foo()
+ tainted registers: []
+ tainted memory   : [["0x7ffd6db7a060","0x7ffd6db7a088"]]
+ <READ  0x7ffd6db7a060>  	0x4005c7 movzx eax, byte ptr [rax]
+ <REGS  edx <- eax>  		0x4005cd mov edx, eax
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a020>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a061>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a021>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a062>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a022>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a063>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a023>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a064>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a024>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a065>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a025>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a066>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a026>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a067>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a027>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a068>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a028>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a069>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a029>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a06a>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a02a>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a06b>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a02b>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a06c>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a02c>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a06d>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a02d>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a06e>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a02e>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a06f>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a02f>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a070>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a030>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a071>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a031>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a072>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a032>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <READ  0x7ffd6db7a073>  	0x4005c7 movzx eax, byte ptr [rax]
+ <READ  0x7ffd6db7a01c>  	0x4005cf mov eax, dword ptr [rbp - 0x24]
+ <WRITE 0x7ffd6db7a033>  	0x4005d4 mov byte ptr [rbp + rax - 0x20], dl
+ <IMM   0x7ffd6db7a033>  	0x4005e2 mov byte ptr [rbp - 0xd], 0
+[x] leave foo()
+[x] stopped tracing
+ tainted registers: ["edx","dx","dl"]
+ tainted memory   : [["0x7ffd6db7a020","0x7ffd6db7a033"],["0x7ffd6db7a060","0x7ffd6db7a088"]]

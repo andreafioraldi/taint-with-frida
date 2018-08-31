@@ -195,42 +195,34 @@ function startTracing() {
           catch(err) { console.log(err); }
         }
     });
+    
+    console.log("[x] started tracing");
 }
 
 
-Interceptor.attach(ptr("0x4005FD"), function () { //main
-    console.log("[x] start tracing on main() enter");
-    startTracing();
-});
+function stopTracing() {
+    Stalker.unfollow(Process.getCurrentThreadId());
+    
+    console.log("[x] stopped tracing");
+}
 
-Interceptor.attach(ptr("0x400596"), { //foo
-    onEnter: function(args) {
-        console.log("[x] start taint on foo() enter");
-        for(var i = 0; i < 40; ++i)
-            taintedAddrs.push(this.context.rdi.add(i));
-        console.log(" tainted memory: " + JSON.stringify([this.context.rdi, this.context.rdi.add(30)]));
-    },
-    onLeave: function(retval) {
-        console.log("[x] end taint on foo() leave");
-        console.log(" tainted registers: " + JSON.stringify(taintedRegs));
-        var ranges = [];
-        taintedAddrs.sort();
-        for(var i in taintedAddrs) {
-            var a = taintedAddrs[i];
-            if(ranges.length === 0) {
-                ranges.push([a, a]);
-            }
-            if(ranges[ranges.length -1][1].equals(a))
-                ranges[ranges.length -1][1] = a.add(1);
-            else {
-                ranges.push([a, a.add(1)]);
-            }
+function taintReport() {
+    console.log(" tainted registers: " + JSON.stringify(taintedRegs));
+    var ranges = [];
+    taintedAddrs.sort();
+    for(var i in taintedAddrs) {
+        var a = taintedAddrs[i];
+        if(ranges.length === 0) {
+            ranges.push([a, a]);
         }
-        console.log(" tainted memory   : " + JSON.stringify(ranges));
-        //stop taint
-        Stalker.unfollow(Process.getCurrentThreadId());
+        if(ranges[ranges.length -1][1].equals(a))
+            ranges[ranges.length -1][1] = a.add(1);
+        else {
+            ranges.push([a, a.add(1)]);
+        }
     }
-});
+    console.log(" tainted memory   : " + JSON.stringify(ranges));
+}
 
 
 
