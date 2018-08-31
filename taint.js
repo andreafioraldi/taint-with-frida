@@ -83,12 +83,12 @@ function untaintMem(addr) {
     }
 }
 
-//{"type":"mem","value":{"base":"rip","scale":1,"disp":2181026}}
 
 function movRegMem(ctx) {
     var instr = Instruction.parse(ctx.pc);
     var op0 = instr.operands[0].value;
     var op1 = instr.operands[1].value;
+    
     if(op1.base !== undefined) {
         var addr = ctx[op1.base].add(op1.disp); //ex. ctx["rip"] + 0x32
         if(op1.index !== undefined)
@@ -110,6 +110,7 @@ function movMemReg(ctx) {
     var instr = Instruction.parse(ctx.pc);
     var op0 = instr.operands[0].value;
     var op1 = instr.operands[1].value;
+    
     if(op0.base !== undefined) {
         var addr = ctx[op0.base].add(op0.disp); //ex. ctx["rip"] + 0x32
         if(op0.index !== undefined)
@@ -133,7 +134,7 @@ function movRegReg(ctx) {
     var op1 = instr.operands[1].value;
     if(!(op0 in regId))
         return;
-    try{
+    
     if(taintedRegs.indexOf(op0) !== -1 && (!(op1 in regId) || taintedRegs.indexOf(op1) === -1)) {
         console.log(" <REGS  " + op0 + " <- " + op1 + ">  \t\t" + instr.address + " " + instr);
         untaintReg(op0);
@@ -141,8 +142,7 @@ function movRegReg(ctx) {
     else if(taintedRegs.indexOf(op0) === -1 && taintedRegs.indexOf(op1) !== -1) {
         console.log(" <REGS  " + op0 + " <- " + op1 + ">  \t\t" + instr.address + " " + instr);
         taintReg(op0);
-    }}catch(e){console.log(e);}
-    //console.log(instr + "  " + JSON.stringify(taintedRegs));
+    }
 }
 
 function movRegImm(ctx) {
@@ -199,19 +199,19 @@ function startTracing() {
 
 
 Interceptor.attach(ptr("0x4005FD"), function () { //main
-    console.log("[x] start tracing");
+    console.log("[x] start tracing on main() enter");
     startTracing();
 });
 
 Interceptor.attach(ptr("0x400596"), { //foo
     onEnter: function(args) {
-        console.log("[x] start taint");
+        console.log("[x] start taint on foo() enter");
         for(var i = 0; i < 40; ++i)
             taintedAddrs.push(this.context.rdi.add(i));
         console.log(" tainted memory: " + JSON.stringify([this.context.rdi, this.context.rdi.add(30)]));
     },
     onLeave: function(retval) {
-        console.log("[x] end taint");
+        console.log("[x] end taint on foo() leave");
         console.log(" tainted registers: " + JSON.stringify(taintedRegs));
         var ranges = [];
         taintedAddrs.sort();
