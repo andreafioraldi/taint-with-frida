@@ -81,7 +81,7 @@ function startTracing() {
           try {
               do {
                 
-                if(instr.mnemonic.startsWith("movzx")) {
+                if(instr.mnemonic.startsWith("mov")) {
                     if(instr.operands[0].type == "reg" && instr.operands[1].type == "mem")
                         iterator.putCallout(movRegMem);
                     else if(instr.operands[0].type == "mem" && instr.operands[1].type == "reg")
