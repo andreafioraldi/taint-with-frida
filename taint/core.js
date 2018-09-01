@@ -38,6 +38,15 @@ Registers.prototype.isFullyTainted = function(reg) {
     return false;
 }
 
+Registers.prototype.toArray = function() {
+    var arr = [];
+    for(var r in this.arch.registers) {
+        if(this.isTainted(r))
+            arr.push(r);
+    }
+    return arr;
+}
+
 Registers.prototype.toRanges = function(reg, base) {
     var rm = this.arch.registers[reg];
     var ranges = [];
@@ -101,7 +110,7 @@ Memory.prototype.toArray = function() {
         if(node === undefined) return arr;
         
         helper(node.left, arr);
-        if(arr.length > 0 && arr[arr.length -1][1].equals(node.interval[0])) //consolidate
+        if(arr.length > 0 && arr[arr.length -1][1].compare(node.interval[0]) >= 0) //consolidate
             arr[arr.length -1][1] = node.interval[1];
         else
             arr.push(node.interval);

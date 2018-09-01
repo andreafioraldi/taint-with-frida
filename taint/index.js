@@ -134,8 +134,7 @@ function stopTracing() {
 }
 
 function report() {
-    //console.log(" tainted registers: " + JSON.stringify(taintedRegs));
-    
+    console.log(" tainted registers: " + JSON.stringify(regs.toArray()));
     console.log(" tainted memory   : " + JSON.stringify(memory.toArray()));
 }
 
