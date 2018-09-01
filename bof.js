@@ -1,23 +1,25 @@
+var taint = require("./taint");
 
 Interceptor.attach(ptr("0x4005B6"), { //main
     onEnter: function(args) {
         console.log("[x] enter main()");
-        startTracing()
+        taint.startTracing()
         var p = Memory.readPointer(this.context.rsi.add(8));
         var l = Memory.readCString(p).length;
         //console.log(Memory.readCString(p));
-        for(var i = 0; i <= l; ++i)
-            taintMem(p.add(i));
-        taintReport()
+        taint.memory.taint(p, l);
+        taint.report()
     }
 });
 
 Interceptor.attach(ptr("0x4005df"),  //main before printf, stop tracing
     function() {
-        stopTracing();
-        taintReport()
+        taint.stopTracing();
+        taint.report()
+        
         console.log("rbp = " + this.context.rbp);
-        if(findTaintedMem(this.context.rbp) !== -1) {
+        
+        if(taint.memory.isTainted(this.context.rbp, 8)) {
             console.log("BOF !!!");
             send("bof");
         }

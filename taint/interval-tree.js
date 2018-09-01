@@ -224,9 +224,9 @@
     ['left', 'right'].forEach(function (side) {
       temp = node[side];
       if (temp && temp.max.compare(interval[0]) >= 0) {
-        inter = intersectionHelper(interval, temp);
+        var interArr = intersectionHelper(interval, temp);
         if(inter !== null)
-            result.push(inter);
+            result = result.concat(interArr);
       }
     });
     return result;

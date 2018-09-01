@@ -20,6 +20,24 @@ Registers.prototype.untaint = function(reg) {
         this.regTaintMap.set(i, false);
 }
 
+Registers.prototype.isTainted = function(reg) {
+    var rm = this.arch.registers[reg];
+    for(var i = rm[0]; i < (rm[0] + rm[1]); ++i)
+        if(this.regTaintMap.get(i))
+            return true;
+    return false;
+}
+
+Registers.prototype.isFullyTainted = function(reg) {
+    var rm = this.arch.registers[reg];
+    for(var i = rm[0]; i < (rm[0] + rm[1]); ++i)
+        if(this.regTaintMap.get(i))
+            return true;
+        else
+            return false;
+    return false;
+}
+
 Registers.prototype.toRanges = function(reg, base) {
     var rm = this.arch.registers[reg];
     var ranges = [];
@@ -67,12 +85,26 @@ Memory.prototype.untaint = function(addr, size) {
     this.memTaintTree.remove([addr, addr.add(size)]);
 }
 
+Memory.prototype.isTainted = function(addr, size) {
+    return this.memTaintTree.intersects([addr, addr.add(size)]);
+}
+
+Memory.prototype.isFullyTainted = function(addr, size) {
+    var inter = this.memTaintTree.intersection([addr, addr.add(size)]);
+    if(inter.length != 1)
+        return false;
+    return inter[0][0].compare(addr) == 0 && inter[0][1].compare(addr.add(size)) == 0;
+}
+
 Memory.prototype.toArray = function() {
     function helper(node, arr) {
         if(node === undefined) return arr;
         
         helper(node.left, arr);
-        arr.push(node.interval);
+        if(arr.length > 0 && arr[arr.length -1][1].equals(node.interval[0])) //consolidate
+            arr[arr.length -1][1] = node.interval[1];
+        else
+            arr.push(node.interval);
         helper(node.right, arr);
         
         return arr;

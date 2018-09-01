@@ -2,7 +2,7 @@
 
 exports.space = 920;
 
-//"name": [address, size]
+//"name": [address, size]  //TODO r8d etc add
 exports.registers = {
     'ac': [192, 8],
     'acflag': [192, 8],
