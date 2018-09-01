@@ -4,15 +4,15 @@ test = "A"*100
 found = None
 
 def on_message(message, data):
+    #print message
+    if message["type"] != "send": return
+    
     global found
     if found == None:
         found = test
 
-with open("taint.js") as f:
+with open("bof_compiled.js") as f:
     code = f.read()
-code += "\n"
-with open("bof.js") as f:
-    code += f.read()
 
 for i in xrange(10,100):
     if found:
@@ -29,6 +29,7 @@ for i in xrange(10,100):
     script.load()
 
     frida.resume(pid)
+    
 
 import time
 time.sleep(1)
