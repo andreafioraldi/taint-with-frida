@@ -1,245 +1,145 @@
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';
 
-var appModule = Process.enumerateModulesSync()[0];
-var appStart = appModule.base;
-var appEnd = appStart.add(appModule.size);
+exports.space = 920;
 
-function scaleSHL(addr, scale) {
-    switch(scale) {
-        case 1:
-        return addr;
-        case 2:
-        return addr.shl(1);
-        case 4:
-        return addr.shl(2);
-        case 8:
-        return addr.shl(3);
-    }
-}
-
-var regSize = {
-    "rax": 8, "rbx": 8, "rcx": 8, "rdx": 8, "rdi": 8, "rsi": 8,
-    "eax": 4, "ebx": 4, "ecx": 4, "edx": 4, "edi": 4, "esi": 4,
-    "ax": 2, "bx": 2, "cx": 2, "dx": 2, "di": 2, "si": 2,
-    "al": 1, "bl": 1, "cl": 1, "dl": 1, "dil": 1, "sil": 1,
+//"name": [address, size]
+exports.registers = {
+    'ac': [192, 8],
+    'acflag': [192, 8],
+    'ah': [17, 1],
+    'al': [16, 1],
+    'ax': [16, 2],
+    'bh': [41, 1],
+    'bl': [40, 1],
+    'bp': [56, 8],
+    'bx': [40, 2],
+    'cc_dep1': [152, 8],
+    'cc_dep2': [160, 8],
+    'cc_ndep': [168, 8],
+    'cc_op': [144, 8],
+    'ch': [25, 1],
+    'cl': [24, 1],
+    'cmlen': [880, 8],
+    'cmstart': [872, 8],
+    'cx': [24, 2],
+    'd': [176, 8],
+    'dflag': [176, 8],
+    'dh': [33, 1],
+    'di': [72, 2],
+    'dih': [73, 1],
+    'dil': [72, 1],
+    'dl': [32, 1],
+    'dx': [32, 2],
+    'eax': [16, 4],
+    'ebp': [56, 4],
+    'ebx': [40, 4],
+    'ecx': [24, 4],
+    'edi': [72, 4],
+    'edx': [32, 4],
+    'emnote': [864, 4],
+    'esi': [64, 4],
+    'esp': [48, 4],
+    'fc3210': [856, 8],
+    'fpreg': [776, 64],
+    'fpround': [848, 8],
+    'fptag': [840, 8],
+    'fpu_regs': [776, 64],
+    'fpu_tags': [840, 8],
+    'fs': [208, 8],
+    'fs_const': [208, 8],
+    'ftop': [768, 4],
+    'gs': [904, 8],
+    'gs_const': [904, 8],
+    'id': [200, 8],
+    'idflag': [200, 8],
+    'ip': [184, 8],
+    'ip_at_syscall': [912, 8],
+    'mm0': [776, 8],
+    'mm1': [784, 8],
+    'mm2': [792, 8],
+    'mm3': [800, 8],
+    'mm4': [808, 8],
+    'mm5': [816, 8],
+    'mm6': [824, 8],
+    'mm7': [832, 8],
+    'nraddr': [888, 8],
+    'pc': [184, 8],
+    'r10': [96, 8],
+    'r11': [104, 8],
+    'r12': [112, 8],
+    'r13': [120, 8],
+    'r14': [128, 8],
+    'r15': [136, 8],
+    'r8': [80, 8],
+    'r9': [88, 8],
+    'rax': [16, 8],
+    'rbp': [56, 8],
+    'rbx': [40, 8],
+    'rcx': [24, 8],
+    'rdi': [72, 8],
+    'rdx': [32, 8],
+    'rip': [184, 8],
+    'rsi': [64, 8],
+    'rsp': [48, 8],
+    'si': [64, 2],
+    'sih': [65, 1],
+    'sil': [64, 1],
+    'sp': [48, 8],
+    'sseround': [216, 8],
+    'xmm0': [224, 16],
+    'xmm1': [256, 16],
+    'xmm10': [544, 16],
+    'xmm11': [576, 16],
+    'xmm12': [608, 16],
+    'xmm13': [640, 16],
+    'xmm14': [672, 16],
+    'xmm15': [704, 16],
+    'xmm16': [736, 16],
+    'xmm2': [288, 16],
+    'xmm3': [320, 16],
+    'xmm4': [352, 16],
+    'xmm5': [384, 16],
+    'xmm6': [416, 16],
+    'xmm7': [448, 16],
+    'xmm8': [480, 16],
+    'xmm9': [512, 16],
+    'ymm0': [224, 32],
+    'ymm1': [256, 32],
+    'ymm10': [544, 32],
+    'ymm11': [576, 32],
+    'ymm12': [608, 32],
+    'ymm13': [640, 32],
+    'ymm14': [672, 32],
+    'ymm15': [704, 32],
+    'ymm16': [736, 32],
+    'ymm2': [288, 32],
+    'ymm3': [320, 32],
+    'ymm4': [352, 32],
+    'ymm5': [384, 32],
+    'ymm6': [416, 32],
+    'ymm7': [448, 32],
+    'ymm8': [480, 32],
+    'ymm9': [512, 32]
 };
 
-var regId = {
-    "rax": 0, "rbx": 1, "rcx": 2, "rdx": 3, "rdi": 4, "rsi": 5,
-    "eax": 0, "ebx": 1, "ecx": 2, "edx": 3, "edi": 4, "esi": 5,
-    "ax": 0, "bx": 1, "cx": 2, "dx": 3, "di": 4, "si": 5,
-    "al": 0, "bl": 1, "cl": 2, "dl": 3, "dil": 4, "sil": 5,
-};
+},{}],2:[function(require,module,exports){
+'use strict';
 
-var registers = [
-    ["rax", "eax", "ax", "al"],
-    ["rbx", "ebx", "bx", "bl"],
-    ["rcx", "ecx", "cx", "cl"],
-    ["rdx", "edx", "dx", "dl"],
-    ["rdi", "edi", "di", "dil"],
-    ["rsi", "esi", "si", "sil"],
-];
+var arch = require("./amd64.js");
 
-var taintedRegs = [];
-var taintedAddrs = [];
+var memory = new require("./memory.js")();
+var regs = new require("./registers.js")(arch);
 
-function taintReg(reg) {
-    if(taintedRegs.indexOf(reg) !== -1)
-        return;
-    
-    var ra = registers[regId[reg]];
-    for(var i = ra.indexOf(reg); i < ra.length; ++i) {
-        taintedRegs.push(ra[i]);
-    }
-}
+regs.taint("rax");
+memory.fromRanges(regs.toRanges("eax", ptr("0xaa00")));
 
-function untaintReg(reg) {
-    var ra = registers[regId[reg]];
-    for(var i = ra.indexOf(reg); i < ra.length; ++i) {
-        var idx = taintedRegs.indexOf(ra[i]);
-        if(idx !== -1)
-            taintedRegs.splice(idx, 1);
-    }
-}
+console.log(JSON.stringify(memory.toArray()));
 
-function findTaintedMem(addr) {
-    for(var i in taintedAddrs)
-        if(taintedAddrs[i].equals(addr))
-            return i;
-    return -1;
-}
+regs.fromBitMap("xmm0", memory.toBitMap(ptr("0xaa02"), 16));
+memory.fromRanges(regs.toRanges("xmm0", ptr("0xbb00")));
 
-function taintMem(addr, size=1) {
-    for(var i = 0; i < size; ++i) {
-        addr = addr.add(i);
-        if(findTaintedMem(addr) === -1)
-            taintedAddrs.push(addr);
-    }
-}
+console.log(JSON.stringify(memory.toArray()));
 
-function untaintMem(addr, size=1) {
-    for(var i = 0; i < size; ++i) {
-        addr = addr.add(i);
-        for(var i in taintedAddrs) {
-            if(taintedAddrs[i] .equals(addr)) {
-                taintedAddrs.splice(i, 1);
-                return;
-            }
-        }
-    }
-}
-
-
-function movRegMem(ctx) {
-    var instr = Instruction.parse(ctx.pc);
-    var operands = instr.operands;
-    var op0 = operands[0].value;
-    var op1 = operands[1].value;
-    
-    if(op1.base === undefined)
-        return;
-    
-    var addr = ctx[op1.base].add(op1.disp); //ex. ctx["rip"] + 0x32
-    if(op1.index !== undefined)
-        addr = addr.add(scaleSHL(ctx[op1.index], op1.scale));
-    
-    if(findTaintedMem(addr) !== -1) {
-        console.log(" <READ  " + addr + ">  \t" + instr.address + " " + instr);
-        taintReg(op0)
-    }
-    else if(taintedRegs.indexOf(op0) !== -1) { //mem not tainted
-        console.log(" <READ  " + addr + ">  \t" + instr.address + " " + instr);
-        untaintReg(op0);
-    }
-}
-
-function movMemReg(ctx) {
-    var instr = Instruction.parse(ctx.pc);
-    var operands = instr.operands;
-    var op0 = operands[0].value;
-    var op1 = operands[1].value;
-    var size1 = operands[1].size;
-    
-    if(op0.base === undefined)
-        return;
-    
-    var addr = ctx[op0.base].add(op0.disp); //ex. ctx["rip"] + 0x32
-    if(op0.index !== undefined)
-        addr = addr.add(scaleSHL(ctx[op0.index], op0.scale));
-    
-    if(findTaintedMem(addr) !== -1) {
-        console.log(" <WRITE " + addr + ">  \t" + instr.address + " " + instr);
-        if(!(op1 in regId) || taintedRegs.indexOf(op1) === -1) //not tainted reg
-            untaintMem(addr, size1);
-    }
-    else if(taintedRegs.indexOf(op1) !== -1) { //mem not tainted
-        console.log(" <WRITE " + addr + ">  \t" + instr.address + " " + instr);
-        taintMem(addr, size1);
-    }
-}
-
-function movRegReg(ctx) {
-    var instr = Instruction.parse(ctx.pc);
-    var operands = instr.operands;
-    var op0 = operands[0].value;
-    var op1 = operands[1].value;
-    if(!(op0 in regId))
-        return;
-    
-    if(taintedRegs.indexOf(op0) !== -1 && (!(op1 in regId) || taintedRegs.indexOf(op1) === -1)) {
-        console.log(" <REGS  " + op0 + " <- " + op1 + ">  \t\t" + instr.address + " " + instr);
-        untaintReg(op0);
-    }
-    else if(taintedRegs.indexOf(op0) === -1 && taintedRegs.indexOf(op1) !== -1) {
-        console.log(" <REGS  " + op0 + " <- " + op1 + ">  \t\t" + instr.address + " " + instr);
-        taintReg(op0);
-    }
-}
-
-function movRegImm(ctx) {
-    var instr = Instruction.parse(ctx.pc);
-    var op0 = instr.operands[0].value
-    
-    if(taintedRegs.indexOf(op0) !== -1) console.log(" <IMMREG " + op0 + ">        \t\t" + instr.address + " " + instr);
-    untaintReg(op0);
-}
-
-function movMemImm(ctx) {
-    var instr = Instruction.parse(ctx.pc);
-    var operands = instr.operands;
-    var op0 = instr.operands[0].value;
-    var size1 = instr.operands[1].size;
-    
-    if(op0.base === undefined)
-        return;
-    
-    var addr = ctx[op0.base].add(op0.disp); //ex. ctx["rip"] + 0x32
-    if(op0.index !== undefined)
-        addr = addr.add(scaleSHL(ctx[op0.index], op0.scale));
-    
-    if(findTaintedMem(addr) !== -1) console.log(" <IMM   " + addr + ">  \t" + instr.address + " " + instr);
-    untaintMem(addr, size1);
-}
-
-function startTracing() {
-    Stalker.follow(Process.getCurrentThreadId(), {
-        transform: function (iterator) {
-          var instr = iterator.next();
-          
-          try {
-              do {
-                var operands = instr.operands;
-                //if(instr.mnemonic.startsWith("mov")) {
-                if(operands.length == 2) {
-                    var mnemonic = instr.mnemonic;
-                    
-                    if(operands[0].type == "reg" && operands[1].type == "mem")
-                        iterator.putCallout(movRegMem);
-                    else if(operands[0].type == "mem" && operands[1].type == "reg")
-                        iterator.putCallout(movMemReg);
-                    else if(operands[0].type == "reg" && operands[1].type == "reg")
-                        iterator.putCallout(movRegReg);
-                    else if(mnemonic.startsWith("mov") && operands[0].type == "reg" && operands[1].type == "imm")
-                        iterator.putCallout(movRegImm);
-                    else if(mnemonic.startsWith("mov") && operands[0].type == "mem" && operands[1].type == "imm")
-                        iterator.putCallout(movMemImm);
-                    //console.log(instr);
-                }
-                
-                iterator.keep();
-              } while ((instr = iterator.next()) !== null);
-          }
-          catch(err) { console.log(err); }
-        }
-    });
-    
-    console.log("[x] started tracing");
-}
-
-
-function stopTracing() {
-    Stalker.unfollow(Process.getCurrentThreadId());
-    
-    console.log("[x] stopped tracing");
-}
-
-function taintReport() {
-    console.log(" tainted registers: " + JSON.stringify(taintedRegs));
-    var ranges = [];
-    taintedAddrs.sort();
-    for(var i in taintedAddrs) {
-        var a = taintedAddrs[i];
-        if(ranges.length === 0) {
-            ranges.push([a, a]);
-        }
-        if(ranges[ranges.length -1][1].equals(a))
-            ranges[ranges.length -1][1] = a.add(1);
-        else {
-            ranges.push([a, a.add(1)]);
-        }
-    }
-    console.log(" tainted memory   : " + JSON.stringify(ranges));
-}
-
-
-
+},{"./amd64.js":1}]},{},[2])
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uLy4uL3Vzci9saWIvbm9kZV9tb2R1bGVzL2ZyaWRhLWNvbXBpbGUvbm9kZV9tb2R1bGVzL2Jyb3dzZXItcGFjay9fcHJlbHVkZS5qcyIsImFtZDY0LmpzIiwiaW5kZXguanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7QUNBQTs7QUFFQSxRQUFRLEtBQVIsR0FBZ0IsR0FBaEI7O0FBRUE7QUFDQSxRQUFRLFNBQVIsR0FBb0I7QUFDaEIsVUFBTSxDQUFDLEdBQUQsRUFBTSxDQUFOLENBRFU7QUFFaEIsY0FBVSxDQUFDLEdBQUQsRUFBTSxDQUFOLENBRk07QUFHaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBSFU7QUFJaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBSlU7QUFLaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBTFU7QUFNaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBTlU7QUFPaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBUFU7QUFRaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBUlU7QUFTaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBVFU7QUFVaEIsZUFBVyxDQUFDLEdBQUQsRUFBTSxDQUFOLENBVks7QUFXaEIsZUFBVyxDQUFDLEdBQUQsRUFBTSxDQUFOLENBWEs7QUFZaEIsZUFBVyxDQUFDLEdBQUQsRUFBTSxDQUFOLENBWks7QUFhaEIsYUFBUyxDQUFDLEdBQUQsRUFBTSxDQUFOLENBYk87QUFjaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBZFU7QUFlaEIsVUFBTSxDQUFDLEVBQUQsRUFBSyxDQUFMLENBZlU7QUFnQmhCLGFBQVMsQ0FBQyxHQUFELEVBQU0sQ0FBTixDQWhCTztBQWlCaEIsZUFBVyxDQUFDLEdBQUQsRUFBTSxDQUFOLENBakJLO0FBa0JoQixVQUFNLENBQUMsRUFBRCxFQUFLLENBQUwsQ0FsQlU7QUFtQmhCLFNBQUssQ0FBQyxHQUFE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
