@@ -1,5 +1,5 @@
 
-Interceptor.attach(ptr("0x4005FD"), function () { //main
+Interceptor.attach(ptr("0x400603"), function () { //main
     console.log("[x] enter main()");
     startTracing();
 });
@@ -13,8 +13,8 @@ Interceptor.attach(ptr("0x400596"), { //foo
     },
     onLeave: function(retval) {
         console.log("[x] leave foo()");
-        stopTracing()
-        taintReport()
+        stopTracing();
+        taintReport();
     }
 });
 
