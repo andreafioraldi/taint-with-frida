@@ -3,6 +3,7 @@
 var BitMap = require("./bitmap.js")
 var IntervalTree = require('./interval-tree.js').IntervalTree;
 
+
 var Registers = function(arch) {
     this.arch = arch;
     this.regTaintMap = new BitMap(arch.space + 32); //+32 for safe cast
