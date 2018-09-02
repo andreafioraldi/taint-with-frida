@@ -1,6 +1,8 @@
 'use strict';
 
 exports.space = 920;
+exports.ptrSize = 8;
+exports.sp = "rsp";
 
 //"name": [address, size]
 exports.registers = {

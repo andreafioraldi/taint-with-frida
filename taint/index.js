@@ -78,8 +78,8 @@ function movRegImm(ctx) {
 function movMemImm(ctx) {
     var instr = Instruction.parse(ctx.pc);
     var operands = instr.operands;
-    var op0 = instr.operands[0].value;
-    var size1 = instr.operands[1].size;
+    var op0 = operands[0].value;
+    var size1 = operands[1].size;
     
     if(op0.base === undefined)
         return;
@@ -91,6 +91,51 @@ function movMemImm(ctx) {
     memory.untaint(addr, size1);
 }
 
+function xorSameReg(ctx) {
+    var instr = Instruction.parse(ctx.pc);
+    var op0 = instr.operands[0].value
+    
+    regs.untaint(op0);
+}
+
+function pushReg(ctx) {
+    var instr = Instruction.parse(ctx.pc);
+    var operands = instr.operands;
+    var op0 = operands[0].value;
+    
+    var addr = ctx.rsp;
+    
+    //if(regs.isTainted(op1)) console.log("write " + instr.address + "   " + instr);
+    
+    memory.fromRanges(regs.toRanges(op0, addr));
+}
+
+function popReg(ctx) {
+    var instr = Instruction.parse(ctx.pc);
+    var operands = instr.operands;
+    var op0 = operands[0].value;
+    var size0 = operands[0].size;
+    
+    var addr = ctx[arch.sp];
+    
+    //if(regs.isTainted(op1)) console.log("write " + instr.address + "   " + instr);
+    
+    regs.fromBitMap(op0, memory.toBitMap(addr, size0));
+}
+
+function ret(ctx) {
+    var instr = Instruction.parse(ctx.pc);
+    var operands = instr.operands;
+    var op0 = operands[0].value;
+    var size0 = operands[0].size;
+    
+    var addr = ctx[arch.sp];
+    
+    //if(regs.isTainted(op1)) console.log("write " + instr.address + "   " + instr);
+    
+    regs.fromBitMap("pc", memory.toBitMap(addr, arch.ptrSize));
+}
+
 function startTracing() {
     Stalker.follow(Process.getCurrentThreadId(), {
         transform: function (iterator) {
@@ -99,22 +144,31 @@ function startTracing() {
           try {
               do {
                 var operands = instr.operands;
-                //if(instr.mnemonic.startsWith("mov")) {
-                if(operands.length == 2) {
-                    var mnemonic = instr.mnemonic;
-                    
+                var mnemonic = instr.mnemonic;
+                
+                if(operands.length == 2 && !mnemonic.startsWith("cmp") && !mnemonic.startsWith("test")) {
                     if(operands[0].type == "reg" && operands[1].type == "mem")
                         iterator.putCallout(movRegMem);
                     else if(operands[0].type == "mem" && operands[1].type == "reg")
                         iterator.putCallout(movMemReg);
-                    else if(operands[0].type == "reg" && operands[1].type == "reg")
-                        iterator.putCallout(movRegReg);
                     else if(mnemonic.startsWith("mov") && operands[0].type == "reg" && operands[1].type == "imm")
                         iterator.putCallout(movRegImm);
                     else if(mnemonic.startsWith("mov") && operands[0].type == "mem" && operands[1].type == "imm")
                         iterator.putCallout(movMemImm);
+                    else if(operands[0].type == "reg" && operands[1].type == "reg") {
+                        if(mnemonic.startsWith("xor") && operands[0].value == operands[1].value)
+                            iterator.putCallout(xorSameReg);
+                        else
+                            iterator.putCallout(movRegReg);
+                    }
                     //console.log(instr);
                 }
+                else if(mnemonic.startsWith("push"))
+                    iterator.putCallout(pushReg);
+                else if(mnemonic.startsWith("pop"))
+                    iterator.putCallout(popReg);
+                else if(mnemonic.startsWith("ret"))
+                    iterator.putCallout(ret);
                 
                 iterator.keep();
               } while ((instr = iterator.next()) !== null);
