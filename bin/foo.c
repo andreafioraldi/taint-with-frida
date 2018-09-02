@@ -16,6 +16,8 @@ void foo(short *buf)
 
 int main(int argc, char ** argv) {
     char buf[40];
-    strncpy(buf, argv[1], 40);
+    printf("enter string to taint: ");
+    read(0, buf, 40);
+    
     foo((short*)buf);
 }

@@ -6,6 +6,8 @@ var core = require("./core.js");
 var memory = new core.Memory();
 var regs = new core.Registers(arch);
 
+var syscallHook = function(ctx) {};
+
 function scaleSHL(addr, scale) {
     switch(scale) {
         case 1:
@@ -136,7 +138,8 @@ function ret(ctx) {
     regs.fromBitMap("pc", memory.toBitMap(addr, arch.ptrSize));
 }
 
-function startTracing() {
+
+function startTracing(hookSyscalls=false) {
     Stalker.follow(Process.getCurrentThreadId(), {
         transform: function (iterator) {
           var instr = iterator.next();
@@ -169,6 +172,8 @@ function startTracing() {
                     iterator.putCallout(popReg);
                 else if(mnemonic.startsWith("ret"))
                     iterator.putCallout(ret);
+                else if(hookSyscalls && mnemonic == "syscall")
+                    iterator.putCallout(syscallHook);
                 
                 iterator.keep();
               } while ((instr = iterator.next()) !== null);
@@ -195,6 +200,7 @@ function report() {
 
 exports.memory = memory;
 exports.regs = regs;
+exports.syscallHook = syscallHook;
 exports.startTracing = startTracing;
 exports.stopTracing = stopTracing;
 exports.report = report;
