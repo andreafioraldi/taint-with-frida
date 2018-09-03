@@ -1,21 +1,27 @@
 var taint = require("./taint");
 
-Interceptor.attach(ptr("0x400603"), function () { //main
-    console.log("[x] enter main()");
-    taint.startTracing();
-});
-
-Interceptor.attach(ptr("0x400596"), { //foo
-    onEnter: function(args) {
-        console.log("[x] enter foo()");
-        taint.memory.taint(this.context.rdi, 40);
-        taint.report()
-    },
-    onLeave: function(retval) {
-        console.log("[x] leave foo()");
+taint.syscallPreHook = function(ctx) {
+    var sn = ctx.rax.toInt32();
+    taint.log("foo", "syscall index = " + sn);
+    if(sn == 0) { //read
+        taint.memory.taint(ctx.rsi, ctx.rdx);
+        taint.report();
+    }
+    else if(sn == 60 || sn == 231) { //exit || exit_group
+        taint.log("foo", "exiting");
         taint.stopTracing();
         taint.report()
     }
-});
+}
 
+taint.syscallPostHook = function(ctx) {
+    taint.log("foo", "syscall ret = " + ctx.rax);
+}
+
+Interceptor.attach(ptr("0x400643"), //main
+    function() {
+        taint.log("foo", "enter main()");
+        taint.startTracing(true); //hook syscalls
+    }
+);
 

@@ -2,7 +2,7 @@ var taint = require("./taint");
 
 Interceptor.attach(ptr("0x4005B6"), { //main
     onEnter: function(args) {
-        console.log("[x] enter main()");
+        taint.log("bof", "enter main()");
         taint.startTracing()
         var p = Memory.readPointer(this.context.rsi.add(8));
         var l = Memory.readCString(p).length;
@@ -17,10 +17,10 @@ Interceptor.attach(ptr("0x4005df"),  //main before printf, stop tracing
         taint.stopTracing();
         taint.report()
         
-        console.log("rbp = " + this.context.rbp);
+        taint.log("bof", "rbp = " + this.context.rbp);
         
         if(taint.memory.isTainted(this.context.rbp, 8)) {
-            console.log("BOF !!!");
+            taint.log("bof", "BOF !!!");
             send("bof");
         }
     }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 void foo(short *buf)
 {
@@ -16,7 +17,7 @@ void foo(short *buf)
 
 int main(int argc, char ** argv) {
     char buf[40];
-    printf("enter string to taint: ");
+    write(1, "enter string to taint: ", 23);
     read(0, buf, 40);
     
     foo((short*)buf);
