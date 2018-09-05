@@ -1,7 +1,5 @@
 # taint-with-frida
 
-just an experiment using a patched version of frida-gum ([https://github.com/frida/frida-gum/pull/294](https://github.com/frida/frida-gum/pull/294)) 
-
 It's not a real tool, only a PoC with this limitations:
 
  + byte-level taint
